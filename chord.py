@@ -26,15 +26,28 @@ class Chord:
                 start = (node.id + 2**i) % (2**self.m)
                 node.finger.append(self.successor(start))
 
-    def lookup(self, start, key):
-        path = [start]
-        current = start
+def lookup(self, start, key):
+    path = [start]
+    current = start
 
-        while True:
-            next_node = self.successor(key)
-            if current == next_node:
+    while True:
+        # find closest node using finger table
+        node_obj = next(n for n in self.node_objs if n.id == current)
+
+        next_node = None
+        for finger in reversed(node_obj.finger):
+            if current < finger <= key or (key < current and (finger > current or finger <= key)):
+                next_node = finger
                 break
-            path.append(next_node)
+
+        if next_node is None:
+            next_node = self.successor(key)
+
+        path.append(next_node)
+
+        if next_node == self.successor(key):
             break
 
-        return path
+        current = next_node
+
+    return path

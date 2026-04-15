@@ -1,30 +1,30 @@
-import streamlit as st
-from chord import Chord
+def lookup(self, start, key):
+    path = [start]
+    current = start
 
-st.title("Chord DHT Lookup Simulation")
+    while True:
+        node_obj = next(n for n in self.node_objs if n.id == current)
 
-n = st.slider("Number of Nodes", 3, 15, 5)
-key = st.number_input("Enter Key", min_value=0, max_value=15, value=4)
+        next_node = None
 
-chord = Chord(n)
-chord.build_finger_table()
+        for finger in reversed(node_obj.finger):
+            if current < key:
+                if current < finger <= key:
+                    next_node = finger
+                    break
+            else:
+                if finger > current or finger <= key:
+                    next_node = finger
+                    break
 
-# SHOW NODES
-st.subheader("Nodes in Ring")
-st.write(chord.nodes)
+        if next_node is None:
+            next_node = self.successor(key)
 
-# SHOW FINGER TABLE
-st.subheader("Finger Tables")
-for node in chord.node_objs:
-    st.write(f"Node {node.id} → {node.finger}")
+        path.append(next_node)
 
-# RUN LOOKUP
-if st.button("Run Lookup"):
-    start = chord.nodes[0]
-    path = chord.lookup(start, key)
+        if next_node == self.successor(key):
+            break
 
-    st.subheader("Lookup Path")
-    st.write(" → ".join(map(str, path)))
+        current = next_node
 
-    st.subheader("Number of Hops")
-    st.write(len(path))
+    return path
